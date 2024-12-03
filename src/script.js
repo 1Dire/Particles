@@ -29,34 +29,33 @@ const count = 5000
 
 
 const positions = new Float32Array(count * 3) // 각 위치는 x, y, z로 구성되므로 3을 곱해서 배열 크기를 설정
-
+const colors = new Float32Array(count * 3)
 for(let i = 0; i < count * 3; i++)// 각 위치가 x, y, z로 구성되므로 동일한 이유로 3을 곱함
 {
     positions[i] = (Math.random() - 0.5) * 10 // Math.random() - 0.5를 사용해 -0.5에서 +0.5 사이의 랜덤 값을 생성
+    colors[i] = Math.random()
 }
 particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3)) // // Three.js BufferAttribute를 생성하고, 각 위치가 x, y, z로 구성되었음을 지정
+particlesGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3))
 //Geometry
 const particlesMaterial = new THREE.PointsMaterial()
 
 particlesMaterial.size = 0.1  // 각 점의 크기를 설정 (기본 단위: 월드 공간)
 particlesMaterial.sizeAttenuation =  true// 점의 크기가 카메라와의 거리에 따라 감소할지 여부
-particlesMaterial.color = new THREE.Color("#ff88cc")
+// particlesMaterial.color = new THREE.Color("#ff88cc")
 particlesMaterial.transparent = true
 particlesMaterial.alphaMap = particleTexture
 // particlesMaterial.alphaTest = 0.001
 // particlesMaterial.depthTest = false
 particlesMaterial.depthWrite = false
-
+particlesMaterial.blending = THREE.AdditiveBlending
+particlesMaterial.vertexColors = true
 
 // Points
 const particles = new THREE.Points(particlesGeometry, particlesMaterial)
 scene.add(particles)
 
-const cube = new THREE.Mesh(
-    new THREE.BoxGeometry(),
-    new THREE.MeshBasicMaterial()
-)
-scene.add(cube)
+
 
 
 /**
@@ -111,7 +110,16 @@ const clock = new THREE.Clock()
 const tick = () =>
 {
     const elapsedTime = clock.getElapsedTime()
-
+    // particles.rotation.y = elapsedTime * 0.2
+    for(let i = 0; i < count; i++)
+        {
+            let i3 = i * 3
+    
+            const x = particlesGeometry.attributes.position.array[i3]
+            particlesGeometry.attributes.position.array[i3 + 1] = Math.sin(elapsedTime + x)
+        }
+        particlesGeometry.attributes.position.needsUpdate = true
+    
     // Update controls
     controls.update()
 
